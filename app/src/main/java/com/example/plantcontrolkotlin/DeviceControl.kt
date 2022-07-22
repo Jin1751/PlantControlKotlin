@@ -3,8 +3,9 @@ package com.example.plantcontrolkotlin
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
-import android.content.DialogInterface
 import android.content.res.ColorStateList
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -13,22 +14,19 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import java.sql.Time
 import java.time.*
-import java.time.chrono.ChronoLocalDate
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.time.Duration.Companion.days
+
 @RequiresApi(Build.VERSION_CODES.O)
-class MainActivity : AppCompatActivity(), View.OnClickListener {
+class DeviceControl : AppCompatActivity(), View.OnClickListener {
     var plantId: Int = 0
-    var plantType: Int = 0
     var temp: Array<Int> = arrayOf(25,18)
-    var humid: Array<Int> = arrayOf(50,80)
+    private var humid: Int = 60
     var bright: Int = 5
-    var cal = Calendar.getInstance()
-    var today = LocalDate.of(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH) + 1,cal.get(Calendar.DATE))
-    var date = LocalDate.of(2022,6,30)
+    var cal : Calendar = Calendar.getInstance()
+    var today : LocalDate = LocalDate.of(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH) + 1,cal.get(Calendar.DATE))
+    var date : LocalDate = LocalDate.of(2022,6,30)
     var dateTxt: String = date.toString()
     var nDays: Long = date.until(today,ChronoUnit.DAYS)
     var sTime: String = ""
@@ -42,28 +40,47 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     lateinit var ledColor : Button
     lateinit var dialog: AlertDialog
     lateinit var lightStart: TextView
-    lateinit var lightEnd: Button
+    private lateinit var lightEnd: Button
     lateinit var tempDayTxt: TextView
     lateinit var tempNightTxt: TextView
     lateinit var humidTxt: TextView
-    var color: Int = 6
-
-    @RequiresApi(Build.VERSION_CODES.O)
+    var color: Int = 5
+    private val colorId = arrayOf(R.color.purple, R.color.green, R.color.blue, R.color.blue_green, R.color.red, R.color.yellow)
+    lateinit var dbHelper : DBHelper
+    private lateinit var database : SQLiteDatabase
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        Log.v("TODAY, Date", today.toString() + "," + date.toString())
-        var plantImg = findViewById<ImageButton>(R.id.PlantImg)
+        setContentView(R.layout.activity_device_control)
+
+        val plantImg = findViewById<ImageButton>(R.id.PlantImg)
         startDate = findViewById<Button>(R.id.StartDate)
         days = findViewById<TextView>(R.id.DayPassed)
         ledColor = findViewById<Button>(R.id.LedColor)
-        var ledBright = findViewById<SeekBar>(R.id.LedBright)
-        var brightTxt = findViewById<TextView>(R.id.BrightTxt)
+        val ledBright = findViewById<SeekBar>(R.id.LedBright)
+        val brightTxt = findViewById<TextView>(R.id.BrightTxt)
         lightStart = findViewById<TextView>(R.id.LightStart)
         lightEnd = findViewById<Button>(R.id.LightEnd)
         tempDayTxt = findViewById<TextView>(R.id.TempDayNum)
         tempNightTxt = findViewById<TextView>(R.id.TempNightNum)
         humidTxt = findViewById<TextView>(R.id.HumidNum)
+        val gotIntent = intent
+        val id = gotIntent.getIntExtra("Device_id", -1)
+        val isFirst = gotIntent.getBooleanExtra("isFirst", true)
+        if(!isFirst){
+            dbHelper = DBHelper(this, "PlantDevices.db", null, 1)
+            database = dbHelper.readableDatabase
+            val cursor : Cursor = database.rawQuery("SELECT * FROM DeviceTable WHERE Device_id = $id", null)
+            temp[0] = cursor.getInt(cursor.getColumnIndexOrThrow("Temp_day"))
+            temp[1] = cursor.getInt(cursor.getColumnIndexOrThrow("Temp_night"))
+            val string_date = cursor.getString(cursor.getColumnIndexOrThrow("Start_date"))
+            humid = cursor.getInt(cursor.getColumnIndexOrThrow("Humid"))
+            bright = cursor.getInt(cursor.getColumnIndexOrThrow("LED_bright"))
+            color = cursor.getInt(cursor.getColumnIndexOrThrow("LED_color"))
+            val start_time = cursor.getString(cursor.getColumnIndexOrThrow("LED_Start_time"))
+            val end_time = cursor.getString(cursor.getColumnIndexOrThrow("LED_End_time"))
+            cursor.close()
+            database.close()
+        }
 
         ledBright.progress = bright
         ledBright.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
@@ -80,23 +97,22 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
 
         })
-
         days.text = dateTxt
         tempDayTxt.text = "${temp[0]}°C"
         tempNightTxt.text = "${temp[1]}°C"
-        humidTxt.text = "${humid[0]}%"
+        humidTxt.text = "${humid}%"
         sTime = timeDigit(cal.get(Calendar.HOUR_OF_DAY), 'H') + " : " + timeDigit(cal.get(Calendar.MINUTE), 'M')
         lightStart.text = sTime
         lightEnd.text = sTime
         plantImg.setOnClickListener(this)
         startDate.text = date.toString()
-        days.text = "DAY: "+ nDays
+        days.text = "DAY: ${nDays}"
         startDate.setOnClickListener(this)
         ledColor.setOnClickListener(this)
         lightStart.setOnClickListener(this)
         lightEnd.setOnClickListener(this)
 
-        ledColor.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this,R.color.yellow))
+        ledColor.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this,colorId[color]))
         ledBright.setPadding(21,0,21,0)
 
     }
@@ -107,31 +123,29 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
 
             }
             R.id.StartDate-> {
-                val setDate = DatePickerDialog(this,DatePickerDialog.OnDateSetListener{ v, y, m, d ->
+                val setDate = DatePickerDialog(this, { v, y, m, d ->
                     date = LocalDate.of(y,m + 1,d)
                     startDate.text = date.toString()
                     nDays = date.until(today,ChronoUnit.DAYS)
                     days.text = "DAY: " + nDays
-                    Log.v("TODAY, Date", today.toString() + "," + date.toString())
                 },date.year,date.monthValue - 1,date.dayOfMonth)
                 setDate.datePicker.maxDate = LocalDateTime.of(date.year,date.monthValue,date.dayOfMonth, 0, 0).toInstant(ZoneOffset.UTC).toEpochMilli()
                 setDate.show()
             }
             R.id.LedColor-> {
                 val colors = arrayOf("Puple", "Green", "Blue", "Blue-Green", "Red", "Yellow")
-                val colorId = arrayOf(R.color.purple, R.color.green, R.color.blue, R.color.blue_green, R.color.red, R.color.yellow)
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle("Select Color")
                 builder.setSingleChoiceItems(colors, color) { _, i ->
                     color = i
                     dialog.dismiss()
-                    ledColor.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this,colorId[i]))
+                    ledColor.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this,colorId[color]))
                 }
                 dialog = builder.create()
                 dialog.show()
             }
             R.id.LightStart-> {
-                TimePickerDialog(this,TimePickerDialog.OnTimeSetListener { v, hourOfDay, minute ->
+                TimePickerDialog(this, { v, hourOfDay, minute ->
                     if(hourOfDay <= eH){
                         sH = hourOfDay
                         if((hourOfDay == eH && minute < eM) || minute <= eM){
@@ -149,7 +163,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
             }
             R.id.LightEnd-> {
-                TimePickerDialog(this,TimePickerDialog.OnTimeSetListener { v, hourOfDay, minute ->
+                TimePickerDialog(this, { v, hourOfDay, minute ->
                     if(sH <= hourOfDay){
                         eH = hourOfDay
                         if((hourOfDay == sH && minute > sM) || sM <= minute){

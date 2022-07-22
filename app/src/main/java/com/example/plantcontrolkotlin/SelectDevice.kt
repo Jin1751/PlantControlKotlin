@@ -1,30 +1,30 @@
 package com.example.plantcontrolkotlin
 
 import android.content.Intent
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import android.graphics.Color
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.annotation.RequiresApi
-import org.intellij.lang.annotations.JdkConstants
 
 class SelectDevice : AppCompatActivity() {
     var deviceNum : Int = 0
+    private var bottonId : Int = 0
     lateinit var tLayout: TableLayout
     lateinit var hLayout: LinearLayout
     var rowId : Int = 0
     lateinit var dbHelper : DBHelper
     lateinit var database : SQLiteDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_select_device)
 
-        var addDevice : androidx.appcompat.widget.Toolbar = findViewById(R.id.AddDevice)
+        val addDevice : androidx.appcompat.widget.Toolbar = findViewById(R.id.AddDevice)
         setSupportActionBar(addDevice)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         addDevice.title = "Device Select"
@@ -32,7 +32,17 @@ class SelectDevice : AppCompatActivity() {
         tLayout = findViewById(R.id.TableLayout)
 
         dbHelper = DBHelper(this, "PlantDevices.db", null, 1)
-        database = dbHelper.writableDatabase
+        database = dbHelper.readableDatabase
+        val cursor: Cursor = database.rawQuery("Select * from deviceTable",null)
+        if(cursor.moveToFirst()){
+            do {
+                val deviceID :Int = cursor.getInt(cursor.getColumnIndexOrThrow("Device_id"))
+                val plantName : String = cursor.getString(cursor.getColumnIndexOrThrow("Plant_name"))
+                btnCreate(deviceID, plantName, false)
+            }while(cursor.moveToNext())
+        }
+        cursor.close()
+        database.close()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -41,29 +51,32 @@ class SelectDevice : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        var newBtn = Button(this)
-        newBtn.id = deviceNum
-        newBtn.text = "Device ${deviceNum}"
+        bottonId++
+        btnCreate(bottonId, "Plant", true)
+        return super.onOptionsItemSelected(item)
+    }
 
+    private fun btnCreate(btnId : Int, name : String, isFirst : Boolean){
+        val newBtn = Button(this)
+        newBtn.id = btnId
+        newBtn.text = name
         newBtn.setOnClickListener(object : View.OnClickListener{
             @RequiresApi(Build.VERSION_CODES.O)
-            val intent = Intent(this@SelectDevice, MainActivity::class.java)
+            val intent = Intent(this@SelectDevice, DeviceControl::class.java)
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onClick(v: View?) {
+                intent.putExtra("Device_id", btnId)
+                intent.putExtra("isFirst", isFirst)
                 startActivity(intent)
             }
         })
         if(deviceNum % 3 == 0){
-            var newRow = TableRow(this)
+            val newRow = TableRow(this)
             newRow.id = rowId++
-            Log.v("LAYOUT ID", "" + newRow.id)
             hLayout = newRow
-            Log.v("MADE", "BTN CREATE new Row")
             tLayout.addView(newRow,LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT)
         }
         hLayout.addView(newBtn, 480, 300)
-        Log.v("BTN ID", "" + newBtn.id)
         deviceNum++
-        return super.onOptionsItemSelected(item)
     }
 }

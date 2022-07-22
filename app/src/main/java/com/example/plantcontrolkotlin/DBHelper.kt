@@ -13,14 +13,17 @@ class DBHelper(
 
 
     override fun onCreate(db: SQLiteDatabase) {
-        var sql : String = "CREATE TABLE if not exists deviceTable (" +
+        val sql : String = "CREATE TABLE if not exists deviceTable (" +
                 "Device_id INTEGER primary key autoincrement," +
+                "Plant_name TEXT," +
                 "Start_date TEXT," +
                 "LED_color INTEGER," +
-                "LED_bright INTERGER," +
+                "LED_bright INTEGER," +
                 "LED_Start_time TEXT," +
                 "LED_End_time TEXT," +
-                "asd" + ");"
+                "Temp_day INTEGER," +
+                "Temp_night INTEGER," +
+                "Humid INTEGER);"
 
         db.execSQL(sql)
     }
