@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="409dp"
+        android:layout_height="729dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/PlantImg"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                tools:srcCompat="@tools:sample/avatars" />
+
+            <Button
+                android:id="@+id/StartDate"
+                android:layout_width="120dp"
+                android:layout_height="wrap_content"
+                android:text="Button" />
+
+            <TextView
+                android:id="@+id/DayPassed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="DAY: 0"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <android.widget.Button
+                android:id="@+id/LedColor"
+                android:layout_width="wrap_content"
+                android:layout_height="165dp"
+                android:layout_marginLeft="50dp"
+                android:layout_weight="1"
+                android:background="@drawable/color_button"
+                android:text="LED"
+                android:textSize="34sp" />
+
+
+            <SeekBar
+                android:id="@+id/LedBright"
+                android:layout_width="1dp"
+                android:layout_height="170dp"
+                android:layout_marginLeft="30dp"
+                android:layout_weight="1"
+                android:max="10"
+                android:min="0"
+                android:paddingStart="0dp"
+                android:paddingEnd="0dp"
+                android:progress="5"
+                android:progressDrawable="@drawable/seek_bar"
+                android:rotation="270"
+                android:scaleX="2.1"
+                android:scaleY="2"
+                android:thumb="@drawable/seek_thumb" />
+
+            <TextView
+                android:id="@+id/BrightTxt"
+                android:layout_width="1dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="밝기:5"
+                android:textColor="#000000"
+                android:textSize="20sp"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/LightTimeInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Light Time"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/LightStart"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="00:00"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/FromTo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="~"
+                    android:textColor="#000000"
+                    android:textSize="24sp" />
+
+                <Button
+                    android:id="@+id/LightEnd"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="00:00"
+                    android:textSize="24sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="35dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/TempTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="TEMP"
+                    android:textColor="#000000"
+                    android:textColorHint="#000000"
+                    android:textSize="20sp" />
+
+                <LinearLayout
+                    android:layout_width="200dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/TempDayNum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="25°C "
+                        android:textColor="#000000"
+                        android:textSize="20sp" />
+
+                    <TextView
+                        android:id="@+id/TempNightNum"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="18°C "
+                        android:layout_marginLeft="10dp"
+                        android:textColor="#000000"
+                        android:textSize="20sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginLeft="30dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/HumidTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="HUMID"
+                    android:textColor="#000000"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/HumidNum"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:gravity="center"
+                    android:text="60%"
+                    android:textColor="#000000"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

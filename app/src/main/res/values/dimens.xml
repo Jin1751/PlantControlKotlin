@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="seek_bar_thickness">5dp</dimen>
+    <dimen name="seek_bar_thumb_size">12dp</dimen>
+    <color name="seek_bar_background">#ababab</color>
+    <color name="seek_bar_progress">#00b6b6</color>
+    <color name="seek_bar_secondary_progress">#3399CC</color>
+</resources>
