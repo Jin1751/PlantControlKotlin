@@ -35,6 +35,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
     var eTime: String = ""
     var eH : Int = 23
     var eM : Int = 59
+    var isFirst: Boolean = true
     lateinit var startDate : Button
     lateinit var days: TextView
     lateinit var ledColor : Button
@@ -44,6 +45,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
     lateinit var tempDayTxt: TextView
     lateinit var tempNightTxt: TextView
     lateinit var humidTxt: TextView
+    lateinit var btnSave: Button
     var color: Int = 5
     private val colorId = arrayOf(R.color.purple, R.color.green, R.color.blue, R.color.blue_green, R.color.red, R.color.yellow)
     lateinit var dbHelper : DBHelper
@@ -63,13 +65,14 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
         tempDayTxt = findViewById<TextView>(R.id.TempDayNum)
         tempNightTxt = findViewById<TextView>(R.id.TempNightNum)
         humidTxt = findViewById<TextView>(R.id.HumidNum)
+        btnSave = findViewById(R.id.BtnSave)
         val gotIntent = intent
-        val id = gotIntent.getIntExtra("Device_id", -1)
-        val isFirst = gotIntent.getBooleanExtra("isFirst", true)
+        plantId = gotIntent.getIntExtra("Device_id", -1)
+        isFirst = gotIntent.getBooleanExtra("isFirst", true)
         if(!isFirst){
             dbHelper = DBHelper(this, "PlantDevices.db", null, 1)
             database = dbHelper.readableDatabase
-            val cursor : Cursor = database.rawQuery("SELECT * FROM DeviceTable WHERE Device_id = $id", null)
+            val cursor : Cursor = database.rawQuery("SELECT * FROM DeviceTable WHERE Device_id = $plantId", null)
             temp[0] = cursor.getInt(cursor.getColumnIndexOrThrow("Temp_day"))
             temp[1] = cursor.getInt(cursor.getColumnIndexOrThrow("Temp_night"))
             val string_date = cursor.getString(cursor.getColumnIndexOrThrow("Start_date"))
@@ -179,6 +182,16 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
                         Toast.makeText(this,"End Time must be later than Start Time", Toast.LENGTH_LONG).show()
                     }
                 }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+            }
+            R.id.BtnSave-> {
+                val cursor : Cursor
+                if(isFirst){
+                    cursor = database.rawQuery("INSERT INTO deviceTable (${plantId},${date},${colorId},${bright},${sTime},${eTime},${temp[0]},${temp[1]},${humid})",null)
+                }
+                else{
+                    cursor = database.rawQuery("UPDATE deviceTable SET Plant_name = 1 , Start_date = 1, LED_color =1 , LED_bright = 1, LED_Start_time = 1, LED_End_time = 1,Temp_day =11 , Temp_night = 1, Humid =1 WHERE Device_id =1 ", null)
+                }
+                cursor.close()
             }
         }
     }
