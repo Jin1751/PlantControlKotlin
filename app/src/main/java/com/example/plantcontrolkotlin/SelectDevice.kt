@@ -36,9 +36,9 @@ class SelectDevice : AppCompatActivity() {
         val cursor: Cursor = database.rawQuery("Select * from deviceTable",null)
         if(cursor.moveToFirst()){
             do {
-                val deviceID :Int = cursor.getInt(cursor.getColumnIndexOrThrow("Device_id"))
-                val plantName : String = cursor.getString(cursor.getColumnIndexOrThrow("Plant_name"))
-                btnCreate(deviceID, plantName, false)
+                val deviceID :Int = cursor.getInt(0)
+                val plantName : String = cursor.getString(1)
+                btnCreate(deviceID, plantName)
             }while(cursor.moveToNext())
         }
         cursor.close()
@@ -52,12 +52,13 @@ class SelectDevice : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         bottonId++
-        btnCreate(bottonId, "Plant", true)
+        btnCreate(bottonId, "Plant")
         return super.onOptionsItemSelected(item)
     }
 
-    private fun btnCreate(btnId : Int, name : String, isFirst : Boolean){
+    private fun btnCreate(btnId : Int, name : String){
         val newBtn = Button(this)
+        Log.v("ID", "$btnId")
         newBtn.id = btnId
         newBtn.text = name
         newBtn.setOnClickListener(object : View.OnClickListener{
@@ -66,7 +67,7 @@ class SelectDevice : AppCompatActivity() {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onClick(v: View?) {
                 intent.putExtra("Device_id", btnId)
-                intent.putExtra("isFirst", isFirst)
+                Log.v("SELECT_DIVICE_ID", "${btnId}")
                 startActivity(intent)
             }
         })
