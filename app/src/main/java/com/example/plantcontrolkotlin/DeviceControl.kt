@@ -51,6 +51,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
     lateinit var tempNightTxt: TextView
     lateinit var humidTxt: TextView
     lateinit var btnSave: Button
+    lateinit var btnDelete: Button
     var color: Int = 5
     private val colorId = arrayOf(R.color.purple, R.color.green, R.color.blue, R.color.blue_green, R.color.red, R.color.yellow)
     lateinit var dbHelper : DBHelper
@@ -71,26 +72,26 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
         tempNightTxt = findViewById<TextView>(R.id.TempNightNum)
         humidTxt = findViewById<TextView>(R.id.HumidNum)
         btnSave = findViewById(R.id.BtnSave)
+        btnDelete = findViewById(R.id.BtnDelete)
         val gotIntent = intent
         dbHelper = DBHelper(this, "PlantDevices.db", null, 1)
         database = dbHelper.readableDatabase
         plantId = gotIntent.getIntExtra("Device_id",0)
         val cursor : Cursor = database.rawQuery("SELECT * FROM deviceTable WHERE Device_id = ${plantId}", null)
         isSetted = (cursor.getCount() != 0)
-        sTime = timeDigit(cal.get(Calendar.HOUR_OF_DAY), 'H') + " : " + timeDigit(cal.get(Calendar.MINUTE), 'M')
+
         if(isSetted){
             cursor.moveToFirst()
-            Log.v("isSET, CURSOR, ID", "${isSetted}, ${cursor.getStringOrNull(2)}, ${plantId}")
             temp[0] = cursor.getInt(7)
             temp[1] = cursor.getInt(8)
-            dateTxt = cursor.getString(2).toString()
+            dateTxt = cursor.getString(2)
             date = LocalDate.parse(dateTxt, DateTimeFormatter.ISO_DATE)
+            nDays = date.until(today,ChronoUnit.DAYS)
             humid = cursor.getInt(9)
             bright = cursor.getInt(4)
             color = cursor.getInt(3)
             sTime = cursor.getString(5).toString()
             var t = sTime.split(" : ")
-            Log.v("TIME", "${sTime}")
             sH = t[0].toInt()
             sM = t[1].toInt()
             eTime = cursor.getString(6).toString()
@@ -100,7 +101,10 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
             cursor.close()
             database.close()
         }
-
+        else{
+            sTime = timeDigit(cal.get(Calendar.HOUR_OF_DAY), 'H') + " : " + timeDigit(cal.get(Calendar.MINUTE), 'M')
+            eTime = timeDigit(24, 'H') + " : " + timeDigit(59, 'M')
+        }
         ledBright.progress = bright
         ledBright.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener{
             var txt : String = "5"
@@ -116,7 +120,6 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
             }
 
         })
-        days.text = dateTxt
         tempDayTxt.text = "${temp[0]}°C"
         tempNightTxt.text = "${temp[1]}°C"
         humidTxt.text = "${humid}%"
@@ -131,6 +134,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
         lightStart.setOnClickListener(this)
         lightEnd.setOnClickListener(this)
         btnSave.setOnClickListener(this)
+        btnDelete.setOnClickListener(this)
         ledColor.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this,colorId[color]))
         ledBright.setPadding(21,0,21,0)
 
@@ -144,11 +148,12 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
             R.id.StartDate-> {
                 val setDate = DatePickerDialog(this, { v, y, m, d ->
                     date = LocalDate.of(y,m + 1,d)
-                    startDate.text = date.toString()
+                    dateTxt = date.toString()
+                    startDate.text = dateTxt
                     nDays = date.until(today,ChronoUnit.DAYS)
                     days.text = "DAY: " + nDays
                 },date.year,date.monthValue - 1,date.dayOfMonth)
-                setDate.datePicker.maxDate = LocalDateTime.of(date.year,date.monthValue,date.dayOfMonth, 0, 0).toInstant(ZoneOffset.UTC).toEpochMilli()
+                setDate.datePicker.maxDate = LocalDateTime.of(today.year,today.monthValue,today.dayOfMonth, 0, 0).toInstant(ZoneOffset.UTC).toEpochMilli()
                 setDate.show()
             }
             R.id.LedColor-> {
@@ -220,6 +225,12 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
                     database.update("deviceTable", values, "Device_id = ${plantId}", null)
                     Toast.makeText(this,"UPDATE", Toast.LENGTH_LONG).show()
                 }
+                database.close()
+                this.finish()
+            }
+            R.id.BtnDelete->{
+                database = dbHelper.readableDatabase
+                database.delete("deviceTable","Device_id = ${plantId}", null)
                 database.close()
                 this.finish()
             }

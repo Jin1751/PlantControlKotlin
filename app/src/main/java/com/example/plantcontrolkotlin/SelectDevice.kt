@@ -13,7 +13,7 @@ import androidx.annotation.RequiresApi
 
 class SelectDevice : AppCompatActivity() {
     var deviceNum : Int = 0
-    private var bottonId : Int = 0
+    var buttonId : Int = 0
     lateinit var tLayout: TableLayout
     lateinit var hLayout: LinearLayout
     var rowId : Int = 0
@@ -32,33 +32,38 @@ class SelectDevice : AppCompatActivity() {
         tLayout = findViewById(R.id.TableLayout)
 
         dbHelper = DBHelper(this, "PlantDevices.db", null, 1)
+
+    }
+
+    override fun onStart() {
+        super.onStart()
         database = dbHelper.readableDatabase
         val cursor: Cursor = database.rawQuery("Select * from deviceTable",null)
         if(cursor.moveToFirst()){
             do {
+
                 val deviceID :Int = cursor.getInt(0)
                 val plantName : String = cursor.getString(1)
                 btnCreate(deviceID, plantName)
+                buttonId++
             }while(cursor.moveToNext())
         }
         cursor.close()
         database.close()
     }
-
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.toolbar_menu, menu)
         return true
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        bottonId++
-        btnCreate(bottonId, "Plant")
+        buttonId++
+        btnCreate(buttonId, "Plant")
         return super.onOptionsItemSelected(item)
     }
 
     private fun btnCreate(btnId : Int, name : String){
         val newBtn = Button(this)
-        Log.v("ID", "$btnId")
         newBtn.id = btnId
         newBtn.text = name
         newBtn.setOnClickListener(object : View.OnClickListener{
