@@ -1,10 +1,10 @@
 package com.example.plantcontrolkotlin
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.ContentValues
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
@@ -16,17 +16,16 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.database.getStringOrNull
+import androidx.lifecycle.Lifecycle
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.math.log
 
 @RequiresApi(Build.VERSION_CODES.O)
 class DeviceControl : AppCompatActivity(), View.OnClickListener {
     var plantId: Int = 0
-    var temp: Array<Int> = arrayOf(25,18)
+    var temp: Int = 25
     private var humid: Int = 60
     var bright: Int = 5
     var cal : Calendar = Calendar.getInstance()
@@ -47,8 +46,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
     lateinit var dialog: AlertDialog
     lateinit var lightStart: TextView
     private lateinit var lightEnd: Button
-    lateinit var tempDayTxt: TextView
-    lateinit var tempNightTxt: TextView
+    lateinit var tempNowTxt: TextView
     lateinit var humidTxt: TextView
     lateinit var btnSave: Button
     lateinit var btnDelete: Button
@@ -68,8 +66,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
         val brightTxt = findViewById<TextView>(R.id.BrightTxt)
         lightStart = findViewById<TextView>(R.id.LightStart)
         lightEnd = findViewById<Button>(R.id.LightEnd)
-        tempDayTxt = findViewById<TextView>(R.id.TempDayNum)
-        tempNightTxt = findViewById<TextView>(R.id.TempNightNum)
+        tempNowTxt = findViewById<TextView>(R.id.TempDayNum)
         humidTxt = findViewById<TextView>(R.id.HumidNum)
         btnSave = findViewById(R.id.BtnSave)
         btnDelete = findViewById(R.id.BtnDelete)
@@ -82,12 +79,11 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
 
         if(isSetted){
             cursor.moveToFirst()
-            temp[0] = cursor.getInt(7)
-            temp[1] = cursor.getInt(8)
+            temp = cursor.getInt(7)
             dateTxt = cursor.getString(2)
             date = LocalDate.parse(dateTxt, DateTimeFormatter.ISO_DATE)
             nDays = date.until(today,ChronoUnit.DAYS)
-            humid = cursor.getInt(9)
+            humid = cursor.getInt(8)
             bright = cursor.getInt(4)
             color = cursor.getInt(3)
             sTime = cursor.getString(5).toString()
@@ -120,8 +116,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
             }
 
         })
-        tempDayTxt.text = "${temp[0]}°C"
-        tempNightTxt.text = "${temp[1]}°C"
+        tempNowTxt.text = "${temp}°C"
         humidTxt.text = "${humid}%"
 
         lightStart.text = sTime
@@ -137,7 +132,6 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
         btnDelete.setOnClickListener(this)
         ledColor.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this,colorId[color]))
         ledBright.setPadding(21,0,21,0)
-
     }
 
     override fun onClick(v: View?) {
@@ -214,8 +208,7 @@ class DeviceControl : AppCompatActivity(), View.OnClickListener {
                 values.put("LED_bright", bright)
                 values.put("LED_Start_time", sTime)
                 values.put("LED_End_time", eTime)
-                values.put("Temp_day", temp[0])
-                values.put("Temp_night", temp[1])
+                values.put("Temp_Now", temp)
                 values.put("Humid", humid)
                 if(!isSetted){
                     database.insert("deviceTable", null, values)

@@ -34,22 +34,30 @@ class SelectDevice : AppCompatActivity() {
         dbHelper = DBHelper(this, "PlantDevices.db", null, 1)
 
     }
-
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         database = dbHelper.readableDatabase
-        val cursor: Cursor = database.rawQuery("Select * from deviceTable",null)
+        val cursor: Cursor = database.rawQuery("Select Device_id, Plant_name from deviceTable",null)
         if(cursor.moveToFirst()){
             do {
-
                 val deviceID :Int = cursor.getInt(0)
                 val plantName : String = cursor.getString(1)
                 btnCreate(deviceID, plantName)
-                buttonId++
+
             }while(cursor.moveToNext())
         }
+        cursor.moveToLast()
+        Log.v("ID", cursor.getInt(0).toString())
+        buttonId = cursor.getInt(0)
         cursor.close()
         database.close()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        tLayout.removeAllViews()
+        deviceNum = 0
+        rowId = 0
     }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.toolbar_menu, menu)
@@ -72,7 +80,6 @@ class SelectDevice : AppCompatActivity() {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onClick(v: View?) {
                 intent.putExtra("Device_id", btnId)
-                Log.v("SELECT_DIVICE_ID", "${btnId}")
                 startActivity(intent)
             }
         })

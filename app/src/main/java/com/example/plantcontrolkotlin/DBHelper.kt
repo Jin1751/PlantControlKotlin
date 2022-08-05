@@ -21,8 +21,7 @@ class DBHelper(
                 "LED_bright INTEGER," +
                 "LED_Start_time TEXT," +
                 "LED_End_time TEXT," +
-                "Temp_day INTEGER," +
-                "Temp_night INTEGER," +
+                "Temp_Now INTEGER," +
                 "Humid INTEGER);"
 
         db.execSQL(sql)
